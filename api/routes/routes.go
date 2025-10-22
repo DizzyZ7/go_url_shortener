@@ -1,10 +1,17 @@
 package routes
 
-import "github.com/gin-gonic/gin"
-import "go_url_shortener/api/handlers"
+import (
+	"go_url_shortener/api/handlers"
+	"go_url_shortener/database/postgres"
+	"go_url_shortener/database/redis"
 
-// Регистрация маршрутов
-func SetupRoutes(router *gin.Engine) {
-    router.GET("/:shortURL", handlers.RedirectURLHandler)
-    router.POST("/shorten", handlers.ShortenURLHandler)
+	"github.com/gin-gonic/gin"
+)
+
+// SetupRoutes регистрирует маршруты для приложения.
+func SetupRoutes(router *gin.Engine, pgDB *postgres.DB, redisClient *redis.Client) {
+	handler := handlers.NewHandler(pgDB, redisClient)
+
+	router.GET("/:shortURL", handler.RedirectURLHandler)
+	router.POST("/shorten", handler.ShortenURLHandler)
 }
