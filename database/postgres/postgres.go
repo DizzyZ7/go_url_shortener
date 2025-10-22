@@ -1,46 +1,44 @@
 package postgres
 
 import (
+    "database/sql"
     "log"
 
-    "github.com/jmoiron/sqlx"
-    _ "github.com/lib/pq" // Импорт драйвера PostgreSQL
+    _ "github.com/lib/pq" // Драйвер PostgreSQL
 )
 
-// DB содержит подключение к базе данных.
-var DB *sqlx.DB
+// DB представляет клиент для работы с базой данных PostgreSQL.
+type DB struct {
+    *sql.DB
+}
 
-// InitDB устанавливает соединение с базой данных.
-func InitDB(connStr string) {
-    var err error
-    DB, err = sqlx.Connect("postgres", connStr)
+// NewDB устанавливает соединение с базой данных и возвращает клиент.
+func NewDB(dbURL string) *DB {
+    db, err := sql.Open("postgres", dbURL)
     if err != nil {
         log.Fatalf("Не удалось подключиться к базе данных: %v", err)
     }
-
-    // Проверяем соединение
-    err = DB.Ping()
-    if err != nil {
+    if err = db.Ping(); err != nil {
         log.Fatalf("Не удалось проверить соединение с базой данных: %v", err)
     }
-
-    log.Println("Успешно подключились к базе данных PostgreSQL!")
+    log.Println("Успешное подключение к PostgreSQL!")
+    return &DB{db}
 }
 
-// MigrateDB выполняет миграции для создания необходимых таблиц.
-func MigrateDB() {
+// Migrate создает необходимую таблицу, если она еще не существует.
+func (d *DB) Migrate() {
     query := `
     CREATE TABLE IF NOT EXISTS urls (
         id SERIAL PRIMARY KEY,
-        short_url TEXT UNIQUE NOT NULL,
+        short_url VARCHAR(255) NOT NULL UNIQUE,
         original_url TEXT NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         clicks INT DEFAULT 0
-    );
-    `
-    _, err := DB.Exec(query)
+    );`
+
+    _, err := d.Exec(query)
     if err != nil {
         log.Fatalf("Не удалось выполнить миграцию: %v", err)
     }
-    log.Println("Миграция базы данных успешно выполнена.")
+    log.Println("Миграция PostgreSQL выполнена успешно.")
 }
