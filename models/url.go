@@ -1,9 +1,12 @@
 package models
 
-// URL представляет модель для хранения URL.
+import "time"
+
+// URL представляет запись о сокращённой ссылке.
 type URL struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-	// Дополнительные поля, такие как количество переходов, можно добавить позже
-	// Clicks int `json:"clicks"`
+    ID          int       `json:"id"`
+    ShortURL    string    `json:"short_url"`
+    OriginalURL string    `json:"original_url"`
+    CreatedAt   time.Time `json:"created_at"`
+    Clicks      int       `json:"clicks"`
 }
