@@ -1,17 +1,25 @@
-# Заготовка для Dockerfile, будет доработана позже
-FROM golang:1.18-alpine
+# Используем многоступенчатую сборку для уменьшения размера итогового образа
+
+# Сборка
+FROM golang:1.18-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . ./
+COPY . .
 
-RUN go build -o /go_url_shortener
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go_url_shortener .
+
+# Финальный образ
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=builder /app/go_url_shortener .
+COPY --from=builder /app/views ./views
 
 EXPOSE 8080
 
-CMD ["/go_url_shortener"]
+CMD ["./go_url_shortener"]
