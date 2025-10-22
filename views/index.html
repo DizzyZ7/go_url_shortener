@@ -1,10 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 450px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .input-group {
+            margin: 20px 0;
+            display: flex;
+        }
+        .input-group input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-group button {
+            padding: 10px 15px;
+            font-size: 1em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #result-area {
+            margin-top: 20px;
+            font-size: 1em;
+            word-wrap: break-word;
+            color: #555;
+        }
+        #result-area a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Go URL Shortener</h1>
-    <!-- Здесь будет форма для сокращения URL -->
+    <div class="container">
+        <h1>Go URL Shortener</h1>
+        <form id="url-form">
+            <div class="input-group">
+                <input type="url" id="long-url" placeholder="Введите длинный URL" required>
+                <button type="submit">Сократить</button>
+            </div>
+        </form>
+        <div id="result-area"></div>
+    </div>
+
+    <script>
+        document.getElementById('url-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const longUrl = document.getElementById('long-url').value;
+            const resultArea = document.getElementById('result-area');
+
+            fetch('/shorten', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ original_url: longUrl }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.short_url) {
+                    const shortUrl = `${window.location.origin}/${data.short_url.split('/').pop()}`;
+                    resultArea.innerHTML = `<p>Ваш короткий URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>`;
+                } else {
+                    resultArea.innerHTML = `<p>Ошибка: ${data.error}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                resultArea.innerHTML = `<p>Произошла ошибка при сокращении URL.</p>`;
+            });
+        });
+    </script>
 </body>
 </html>
