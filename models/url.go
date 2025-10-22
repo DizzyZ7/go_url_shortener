@@ -1,7 +1,9 @@
 package models
 
-// Структура для хранения данных о URL
+// URL представляет модель для хранения URL.
 type URL struct {
-    ShortURL    string `json:"short_url"`
-    OriginalURL string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+	// Дополнительные поля, такие как количество переходов, можно добавить позже
+	// Clicks int `json:"clicks"`
 }
